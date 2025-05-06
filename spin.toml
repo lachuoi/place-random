@@ -1,0 +1,20 @@
+spin_manifest_version = 2
+
+[application]
+name = "place-random"
+version = "0.1.0"
+authors = ["Seungjin Kim <seungjin@duck.com>"]
+description = ""
+
+[[trigger.http]]
+route = "/..."
+component = "place-random"
+
+[component.place-random]
+source = "place_random.wasm"
+allowed_outbound_hosts = ["https://geoname-seungjin.turso.io"]
+
+[component.place-random.build]
+#command = "cargo build --target wasm32-wasip1 --release"
+command = "cargo build --target wasm32-wasip1 --release -Z unstable-options --artifact-dir . "
+watch = ["src/**/*.rs", "Cargo.toml"]
