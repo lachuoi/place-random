@@ -1,7 +1,6 @@
 use anyhow::Result;
 use rand::distr::weighted::WeightedIndex;
 use rand::prelude::*;
-use serde_hjson;
 use serde_json::{json, Number, Value};
 use spin_sdk::{
     http::{IntoResponse, Method::Get, Params, Request, Response, Router},
@@ -22,10 +21,7 @@ async fn handle_root(req: Request) -> Result<impl IntoResponse> {
 }
 
 #[allow(dead_code)]
-async fn raw_random_location(
-    _req: Request,
-    _params: Params,
-) -> anyhow::Result<impl IntoResponse> {
+async fn raw_random_location(_req: Request, _params: Params) -> anyhow::Result<impl IntoResponse> {
     let connection = Connection::open("geoname").unwrap();
     //.expect("geoname libsql connection error");
 
@@ -44,10 +40,7 @@ async fn raw_random_location(
 
 const CACHEKEY: &str = "city-pop-pair";
 
-async fn weighted_random_location(
-    _req: Request,
-    _params: Params,
-) -> Result<Response> {
+async fn weighted_random_location(_req: Request, _params: Params) -> Result<Response> {
     // https://docs.rs/rand/latest/rand/distr/weighted/struct.WeightedIndex.html
     let cache = Store::open("mem")?;
 
@@ -75,8 +68,7 @@ async fn weighted_random_location(
 
             let connection = Connection::open("geoname").unwrap();
             //.expect("geoname libsql connection error");
-            let execute_params =
-                [SqlValue::Integer(base_population.as_i64().unwrap())];
+            let execute_params = [SqlValue::Integer(base_population.as_i64().unwrap())];
             let rowset = connection.execute(
                 "SELECT geonameid, population, country, asciiname FROM cities15000 WHERE population >= ? ",
                 execute_params.as_slice(),
@@ -94,12 +86,8 @@ async fn weighted_random_location(
                 if let Some(obj) = weighted_countries.as_object() {
                     for (key, val) in obj.iter() {
                         if row.get::<&str>(2).unwrap() == key {
-                            let weighted_point =
-                                population * val.as_f64().unwrap();
-                            cities_points.push((
-                                row.get::<i64>(0).unwrap(),
-                                weighted_point,
-                            ));
+                            let weighted_point = population * val.as_f64().unwrap();
+                            cities_points.push((row.get::<i64>(0).unwrap(), weighted_point));
                         }
                     }
                 } else {
@@ -110,12 +98,8 @@ async fn weighted_random_location(
                 if let Some(obj) = weighted_cities.as_object() {
                     for (key, val) in obj.iter() {
                         if row.get::<&str>(3).unwrap() == key {
-                            let weighted_point =
-                                population * val.as_f64().unwrap();
-                            cities_points.push((
-                                row.get::<i64>(0).unwrap(),
-                                weighted_point,
-                            ));
+                            let weighted_point = population * val.as_f64().unwrap();
+                            cities_points.push((row.get::<i64>(0).unwrap(), weighted_point));
                         }
                     }
                 } else {
@@ -141,7 +125,7 @@ async fn weighted_random_location(
     let random_index = dist.sample(&mut rng);
 
     let id = data[random_index].0;
-    let value = data[random_index].1;
+    let _value = data[random_index].1;
     // println!("{} -- {} - {}", random_index, id, value);
 
     let connection = Connection::open("geoname").unwrap(); //.expect("geoname libsql connection error");
